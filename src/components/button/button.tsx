@@ -1,30 +1,30 @@
-import React from 'react';
-import { ButtonCommon, MainButton, WarningButton } from './button-styled';
+import React from 'react'
+import { ButtonCommon, MainButton, WarningButton } from './button-styled'
 
 interface Props {
-    type?: string
-    onClick?: () => void
-    children: React.ReactNode
-
+    type?: string;
+    onClick?: (e?: any) => void;
+    children: React.ReactNode;
+    disabled?: boolean;
 }
 
-export function Button({type, onClick, children} : Props) {
+export const Button = ( { type, onClick, children, disabled } : Props) => {
     switch (type) {
         case 'main':
             return (
-                <MainButton onClick={onClick}>
+                <MainButton onClick={onClick} disabled={disabled}>
                     {children}
                 </MainButton>
             )
         case 'warning':
             return (
-                <WarningButton onClick={onClick}>
+                <WarningButton onClick={onClick} disabled={disabled}>
                     {children}
                 </WarningButton>
             )
         default:
             return (
-                <ButtonCommon onClick={onClick}>
+                <ButtonCommon onClick={onClick} disabled={disabled}>
                     {children}
                 </ButtonCommon>
             )

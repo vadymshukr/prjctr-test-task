@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { card } from '../../style';
 
 export const Container = styled.div``
 
@@ -6,10 +7,10 @@ export const TopNavigation = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  border-radius: 8px;
-  box-shadow: 0 0 5px dimgray;
+  ${card};
+  margin-bottom: 16px;
 `
 
 export const NotesList = styled.div`
+  ${card};
 `

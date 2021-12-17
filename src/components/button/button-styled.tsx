@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from 'styled-components'
 
 export const ButtonCommon = styled.button`
   color: white;
@@ -13,6 +13,10 @@ export const ButtonCommon = styled.button`
   border-radius: 8px;
   cursor: pointer;
   background: #0d6efd;
+  &:disabled {
+    cursor: not-allowed;
+    background: gray;
+  }
 `
 
 export const MainButton = styled(ButtonCommon)`
