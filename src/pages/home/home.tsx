@@ -13,7 +13,7 @@ export function Home () {
         <>
         <Container>
             <TopNavigation>
-                <Searchbar />
+                {/*<Searchbar />*/}
                 <Button onClick={() => {setModalIsOpen(true)}}>
                     Create note
                 </Button>
