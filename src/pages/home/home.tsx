@@ -13,7 +13,7 @@ export function Home () {
 
     useEffect(() => {
         setVisibleNotes(notes)
-    }, [])
+    }, [notes])
 
     const handleSearch = (value: string) => {
         const filteredNotes = notes.filter(note => note.title.includes(value) || note.content.includes(value))

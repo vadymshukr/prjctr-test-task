@@ -59,13 +59,12 @@ export function CreateNote({handleModalClose, maxTitleLength = 20, editableNote}
 
     const handleTitleLength = (e: ContentEditableEvent) => {
         const value = (e.target as HTMLInputElement).value
-
         if (value.length <= maxTitleLength ) {
-            setTitleValue(value)
+            setTitleValue(sanitizeHtml(value, sanitizeConf))
         } else {
-            const part1 = value.slice(0, maxTitleLength)
-            const part2 = value.slice(maxTitleLength)
-            setTitleValue(part1 + '<small>' + sanitizeHtml(part2, sanitizeConf) +'</small>')
+            const part1 = sanitizeHtml(value, sanitizeConf).slice(0, maxTitleLength)
+            const part2 = sanitizeHtml(value, sanitizeConf).slice(maxTitleLength)
+            setTitleValue(part1 + '<small>' + part2 +'</small>')
         }
     }
 

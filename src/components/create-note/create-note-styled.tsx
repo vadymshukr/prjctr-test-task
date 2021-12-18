@@ -27,6 +27,7 @@ export const ContentEditableStyled = styled(ContentEditable)`
   border: 1px solid black;
   padding: 4px 12px;
   font-size: 14px;
+white-space: nowrap;
   small {
     font-weight: 400;
     background: pink;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../components';
 import {Content, Main } from '../../components/note/note-styled';
@@ -6,12 +6,39 @@ import sanitizeHtml from "sanitize-html";
 import { NotesService } from '../../components/services/notesService';
 import { sanitizeConf } from '../../helpers/sanitizeHtmlOptions';
 import { ButtonWrapper, Container } from './single-note-styled';
+const linkEventListener = (e: MouseEvent, link: HTMLAnchorElement) =>
+{
+    e.preventDefault();
+    const conf = window.confirm('You want to leave this page?');
+    if(conf){
+        window.open(link.href, '_blank');
+    }
+}
 
 export function SingleNote() {
   const route = useParams();
   const {id} = route;
   const single = NotesService.getSingleNote(Number(id))
   const navigate = useNavigate();
+
+  useEffect(() => {
+      const links:NodeListOf<HTMLAnchorElement> = (document.querySelectorAll('a'));
+      links.forEach((link) => {
+          link.addEventListener('click', (e) => {
+              linkEventListener(e, link);
+          })
+      })
+
+      return () => {
+          links.forEach((link) => {
+              link.removeEventListener( 'click', (e) => {
+                  linkEventListener( e, link );
+              } )
+          })
+      }
+
+  }, [])
+
   return (
       <Container>
         <Main>
