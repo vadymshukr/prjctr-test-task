@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { sanitizeConf } from '../../helpers/sanitizeHtmlOptions';
-import { addNewNote, editNote, getNotesList, notesType } from '../../store/notes';
+import { addNewNote, editNote, notesType } from '../../store/notes';
 import { Button } from '../button';
 import {
     ButtonGroup,
@@ -20,35 +20,27 @@ type Props = {
     handleModalClose: (value: boolean) => void,
     maxTitleLength?: number
     editableNote?: notesType
+    maxContentLength?: number
 }
 
-
-
-export function CreateNote({handleModalClose, maxTitleLength = 20, editableNote} : Props) {
+export function CreateNote({handleModalClose, maxTitleLength = 20, editableNote, maxContentLength = 1000} : Props) {
     const [titleValue, setTitleValue] = useState('')
     const [contentValue, setContentValue] = useState('')
-    const [isDisabled, setIsDisabled] = useState(true)
-    const [counter, setCounter] = useState(maxTitleLength);
     const contentEditableRef = useRef<HTMLDivElement>(null);
+    const sanitizedTitleLength = useMemo(() => sanitizeHtml(titleValue, {allowedTags: []}).length, [titleValue])
+    const sanitizedContentLength = useMemo(() => sanitizeHtml(contentValue, {allowedTags: []}).length, [contentValue])
     const dispatch = useDispatch()
-
-    useEffect(() => {
-        if (
-            contentValue.length === 0
-            || titleValue.length === 0
-            || titleValue.length > maxTitleLength) {
-            setIsDisabled(true)
-        } else {
-            setIsDisabled(false)
-        }
-        if (titleValue.length <= maxTitleLength) {
-            setCounter(maxTitleLength - titleValue.length)
-
-        } else {
-            setCounter(maxTitleLength - titleValue.length + 15)
-
-        }
+    const isSaveButtonDisabled = useMemo(() => {
+        return !contentValue.length || !titleValue.length || sanitizedTitleLength > maxTitleLength || sanitizedContentLength > maxContentLength
     }, [contentValue, titleValue])
+
+    const titleCounter = useMemo(() => {
+        return maxTitleLength - sanitizedTitleLength
+    }, [titleValue])
+
+    const contentCounter = useMemo(() => {
+        return maxContentLength - sanitizedContentLength
+    }, [contentValue])
 
     useEffect(() => {
         if (editableNote){
@@ -118,14 +110,14 @@ export function CreateNote({handleModalClose, maxTitleLength = 20, editableNote}
         <Container>
             <Title>Create new note</Title>
             <FormGroup>
-                <Label>Title ({counter})</Label>
+                <Label>Title ({titleCounter})</Label>
                 <ContentEditableStyled
                     html={titleValue}
                     onChange={(e) => {handleTitleLength(e)}}
                 />
             </FormGroup>
             <FormGroup>
-                <Label>Content</Label>
+                <Label>Content ({contentCounter})</Label>
                 <Textarea
                     onChange={handleContentChange}
                     html={contentValue}
@@ -141,10 +133,9 @@ export function CreateNote({handleModalClose, maxTitleLength = 20, editableNote}
             <ButtonGroup>
                 {editableNote
                     ?
-                    <Button type='main' disabled={isDisabled} onClick={handleEdit}>Edit</Button>
+                    <Button type='main' disabled={isSaveButtonDisabled} onClick={handleEdit}>Edit</Button>
                     :
-                    <Button type='main' disabled={isDisabled} onClick={handleSave}>Save</Button>
-
+                    <Button type='main' disabled={isSaveButtonDisabled} onClick={handleSave}>Save</Button>
                 }
                 <Button type='warning' onClick={() => {handleModalClose(false)}}>Cancel</Button>
             </ButtonGroup>
