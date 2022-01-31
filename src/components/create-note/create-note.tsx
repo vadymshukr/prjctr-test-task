@@ -113,7 +113,7 @@ export function CreateNote({handleModalClose, maxTitleLength = 20, editableNote,
                 <Label>Title ({titleCounter})</Label>
                 <ContentEditableStyled
                     html={titleValue}
-                    onChange={(e) => {handleTitleLength(e)}}
+                    onChange={handleTitleLength}
                 />
             </FormGroup>
             <FormGroup>
