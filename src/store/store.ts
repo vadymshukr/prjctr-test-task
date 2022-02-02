@@ -3,7 +3,7 @@ import { notesReducer } from './notes';
 
 export const store = configureStore({
     reducer: {
-        notes: notesReducer
+        notes: notesReducer,
     },
     preloadedState: {}
 })

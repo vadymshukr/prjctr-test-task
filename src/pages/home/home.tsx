@@ -47,7 +47,6 @@ export function Home () {
                 }}}>
                 <CreateNote
                     handleModalClose={(value: boolean) => setModalIsOpen(value)}
-                    maxTitleLength={10}
                 />
             </Modal>
         </>
