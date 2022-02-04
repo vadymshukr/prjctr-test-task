@@ -3,3 +3,8 @@ export enum HtmlFormattingEnum {
     Italic,
     Heading
 }
+
+export enum FormDataEnum {
+    Title,
+    Content
+}
