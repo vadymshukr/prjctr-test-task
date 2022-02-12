@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Button, CreateNote, Note, Searchbar } from '../../components';
-import { getNotesList, notesType } from '../../store/notes';
+import { getModalStatus, setModalVisible } from '../../store/modalStatus';
+import { getNotesList, NotesType } from '../../store/notes';
 import { Container, NotesList, TopNavigation } from './home-styled';
 import Modal from 'react-modal';
 Modal.setAppElement('#root');
 
 export function Home () {
-    const [modalIsOpen, setModalIsOpen] = useState(false)
-    const [visibleNotes, setVisibleNotes] = useState([] as notesType[]);
+    const dispatch = useDispatch();
+    const modalIsOpen = useSelector(getModalStatus);
+    const [visibleNotes, setVisibleNotes] = useState([] as NotesType[]);
     const notes = useSelector(getNotesList)
 
     useEffect(() => {
@@ -24,7 +26,7 @@ export function Home () {
             <Container>
                 <TopNavigation>
                     <Searchbar handleSearch={handleSearch}/>
-                    <Button onClick={() => {setModalIsOpen(true)}}>
+                    <Button onClick={() => {dispatch(setModalVisible())}}>
                         Create note
                     </Button>
                 </TopNavigation>
@@ -45,10 +47,7 @@ export function Home () {
                     background: 'transparent',
                     borderColor: 'transparent'
                 }}}>
-                <CreateNote
-                    handleModalClose={(value: boolean) => setModalIsOpen(value)}
-                    maxTitleLength={10}
-                />
+                <CreateNote />
             </Modal>
         </>
     )

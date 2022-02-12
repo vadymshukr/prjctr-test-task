@@ -1,7 +1,12 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { sanitizeConf } from '../../helpers/sanitizeHtmlOptions';
-import { addNewNote, editNote, notesType } from '../../store/notes';
+import sanitizeHtml from 'sanitize-html';
+import { MAX_CONTENT_LENGTH, MAX_TITLE_LENGTH } from '../../helpers/constants';
+import { FormDataEnum, HtmlFormattingEnum } from '../../helpers/enums';
+import { makeStringWithError } from '../../helpers/funcs';
+import { sanitizeConf, sanitizeNoTagsConf } from '../../helpers/sanitizeHtmlOptions';
+import { setModalHidden } from '../../store/modalStatus';
+import { addNewNote, editNote, NotesType } from '../../store/notes';
 import { Button } from '../button';
 import {
     ButtonGroup,
@@ -13,97 +18,42 @@ import {
     Textarea,
     Title
 } from './create-note-styled';
-import { ContentEditableEvent } from 'react-contenteditable';
-import sanitizeHtml from "sanitize-html";
 
 type Props = {
-    handleModalClose: (value: boolean) => void,
-    maxTitleLength?: number
-    editableNote?: notesType
-    maxContentLength?: number
+    note?: NotesType
 }
 
-export function CreateNote({handleModalClose, maxTitleLength = 20, editableNote, maxContentLength = 1000} : Props) {
-    const [titleValue, setTitleValue] = useState('')
-    const [contentValue, setContentValue] = useState('')
+type CreateNoteViewProps = {
+    formData: NotesType
+    handleFormChange: (value: string, type: FormDataEnum) => void
+    titleCounter: number
+    contentCounter: number
+    isSaveButtonDisabled: boolean
+    handleSave: (id: number | null) => void
+}
+
+const CreateNoteView = ({
+                            formData,
+                            handleFormChange,
+                            titleCounter,
+                            contentCounter,
+                            isSaveButtonDisabled,
+                            handleSave,
+                            }: CreateNoteViewProps) => {
     const contentEditableRef = useRef<HTMLDivElement>(null);
-    const sanitizedTitleLength = useMemo(() => sanitizeHtml(titleValue, {allowedTags: []}).length, [titleValue])
-    const sanitizedContentLength = useMemo(() => sanitizeHtml(contentValue, {allowedTags: []}).length, [contentValue])
-    const dispatch = useDispatch()
-    const isSaveButtonDisabled = useMemo(() => {
-        return !contentValue.length || !titleValue.length || sanitizedTitleLength > maxTitleLength || sanitizedContentLength > maxContentLength
-    }, [contentValue, titleValue])
-
-    const titleCounter = useMemo(() => {
-        return maxTitleLength - sanitizedTitleLength
-    }, [titleValue])
-
-    const contentCounter = useMemo(() => {
-        return maxContentLength - sanitizedContentLength
-    }, [contentValue])
-
-    useEffect(() => {
-        if (editableNote){
-            setTitleValue(editableNote.title)
-            setContentValue(editableNote.content)
-        }
-    }, [])
-
-    const handleTitleLength = (e: ContentEditableEvent) => {
-        const value = (e.target as HTMLInputElement).value
-        if (value.length <= maxTitleLength ) {
-            setTitleValue(sanitizeHtml(value, sanitizeConf))
-        } else {
-            const part1 = sanitizeHtml(value, sanitizeConf).slice(0, maxTitleLength)
-            const part2 = sanitizeHtml(value, sanitizeConf).slice(maxTitleLength)
-            setTitleValue(part1 + '<small>' + part2 +'</small>')
-        }
-    }
-
-    const handleContentChange = (e:ContentEditableEvent) => {
-        const value = (e.target as HTMLInputElement).value
-        if ((e.nativeEvent as InputEvent).inputType === 'insertFromPaste'){
-            navigator.clipboard.readText()
-                .then(text => {
-                    setContentValue(contentValue + sanitizeHtml(text, sanitizeConf) + '&nbsp;')
-                })
-                .catch(err => {
-                    console.error('Failed to read clipboard contents: ', err);
-                });
-        } else {
-            setContentValue(value)
-        }
-    }
-
-    const handleSave = () => {
-        dispatch(addNewNote({
-            id: new Date().getTime(),
-            title: titleValue,
-            content: contentValue}))
-        handleModalClose(false)
-    }
-
-    const handleEdit = () => {
-        dispatch(editNote({
-            id: editableNote?.id,
-            title: titleValue,
-            content: contentValue}))
-        handleModalClose(false)
-    }
-
-    const makeBold = (e: MouseEvent) => {
+    const dispatch = useDispatch();
+    const makeHtmlFormatting = (e: MouseEvent, type: HtmlFormattingEnum) => {
         e.preventDefault();
-        document.execCommand('bold', false);
-    }
-
-    const makeItalic = (e: MouseEvent) => {
-        e.preventDefault();
-        document.execCommand('italic', false);
-    }
-
-    const makeHeading = (e: MouseEvent) => {
-        e.preventDefault();
-        document.execCommand('formatBlock', false, 'h1');
+        switch (type){
+            case HtmlFormattingEnum.Bold:
+                document.execCommand('bold', false)
+                break
+            case HtmlFormattingEnum.Italic:
+                document.execCommand('italic', false)
+                break
+            case HtmlFormattingEnum.Heading:
+                document.execCommand('formatBlock', false, 'h1');
+        }
     }
 
     return (
@@ -112,33 +62,85 @@ export function CreateNote({handleModalClose, maxTitleLength = 20, editableNote,
             <FormGroup>
                 <Label>Title ({titleCounter})</Label>
                 <ContentEditableStyled
-                    html={titleValue}
-                    onChange={handleTitleLength}
+                    html={formData.title}
+                    onChange={e => {handleFormChange(e.target.value, FormDataEnum.Title)}}
                 />
             </FormGroup>
             <FormGroup>
                 <Label>Content ({contentCounter})</Label>
                 <Textarea
-                    onChange={handleContentChange}
-                    html={contentValue}
+                    html={formData.content}
+                    onChange={e => {handleFormChange(e.target.value, FormDataEnum.Content)}}
                     innerRef={contentEditableRef}
-
                 />
             </FormGroup>
             <ButtonGroupControl>
-                <Button type='main' onClick={(e:MouseEvent) => {makeBold(e)}}>Bold</Button>
-                <Button type='main' onClick={(e:MouseEvent) => {makeItalic(e)}}>Italic</Button>
-                <Button type='main' onClick={(e:MouseEvent) => {makeHeading(e)}}>Make h1</Button>
+                <Button type='main' onClick={e => makeHtmlFormatting(e, HtmlFormattingEnum.Bold)}>Bold</Button>
+                <Button type='main' onClick={e => makeHtmlFormatting(e, HtmlFormattingEnum.Italic)}>Italic</Button>
+                <Button type='main' onClick={e => makeHtmlFormatting(e, HtmlFormattingEnum.Heading)}>Make h1</Button>
             </ButtonGroupControl>
             <ButtonGroup>
-                {editableNote
-                    ?
-                    <Button type='main' disabled={isSaveButtonDisabled} onClick={handleEdit}>Edit</Button>
-                    :
-                    <Button type='main' disabled={isSaveButtonDisabled} onClick={handleSave}>Save</Button>
-                }
-                <Button type='warning' onClick={() => {handleModalClose(false)}}>Cancel</Button>
+                <Button type='main'
+                        disabled={isSaveButtonDisabled}
+                        onClick={() => {handleSave(formData.id)}}>{formData?.id ? 'Edit' : 'Save'}</Button>
+                <Button type='warning' onClick={() => {dispatch(setModalHidden())}}>Cancel</Button>
             </ButtonGroup>
         </Container>
+    )
+}
+
+export function CreateNote({note} : Props) {
+    const dispatch = useDispatch()
+
+    const [formData, setFormData] = useState<NotesType>({
+        id: note?.id ? note.id : null,
+        title: note?.title ? note?.title : '',
+        content: note?.content ? note?.content : ''
+    })
+
+    const sanitizedTitleLength = useMemo(() => sanitizeHtml(formData.title, sanitizeNoTagsConf).length, [formData.title])
+
+    const sanitizedContentLength = useMemo(() => sanitizeHtml(formData.content, sanitizeNoTagsConf).length, [formData.content])
+
+    const isSaveButtonDisabled = useMemo(() => {
+        return !formData.title.length || !formData.content.length || sanitizedTitleLength > MAX_TITLE_LENGTH || sanitizedContentLength > MAX_CONTENT_LENGTH
+    }, [formData.title, formData.content])
+
+    const handleFormDataChange = (value: string, type: FormDataEnum) => {
+        const sanitizedValue = sanitizeHtml(value, sanitizeConf)
+        switch (type) {
+            case FormDataEnum.Title:
+                setFormData({...formData, title: makeStringWithError(sanitizedValue, MAX_TITLE_LENGTH)})
+                break
+            case FormDataEnum.Content:
+                setFormData({...formData, content: sanitizeHtml(value, sanitizeConf)})
+        }
+    }
+
+    const handleSave = (id: number | null) => {
+        if (id) {
+            dispatch(editNote({
+                id: id,
+                title: formData.title,
+                content: formData.content}))
+            dispatch(setModalHidden())
+        } else {
+            dispatch(addNewNote({
+                id: new Date().getTime(),
+                title: formData.title,
+                content: formData.content}))
+            dispatch(setModalHidden())
+        }
+
+    }
+    return (
+       <CreateNoteView
+            formData={formData}
+            isSaveButtonDisabled={isSaveButtonDisabled}
+            handleSave={handleSave}
+            titleCounter={MAX_TITLE_LENGTH - sanitizedTitleLength}
+            contentCounter={MAX_CONTENT_LENGTH - sanitizedContentLength}
+            handleFormChange={handleFormDataChange}
+       />
     )
 }

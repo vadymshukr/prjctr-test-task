@@ -1,20 +1,20 @@
-import { notesType } from '../../store/notes';
+import { NotesType } from '../../store/notes';
 
 export const NotesService = {
     getAllNotes: () => {
         return localStorage.getItem('notes')
     },
-    getSingleNote: (id: number):notesType => {
+    getSingleNote: (id: number):NotesType => {
         const data = localStorage.getItem('notes')
-        return data ? JSON.parse(data).find((note: notesType) => note.id === id) : null
+        return data ? JSON.parse(data).find((note: NotesType) => note.id === id) : null
     },
-    addNewNote: (newState: notesType[]) => {
+    addNewNote: (newState: NotesType[]) => {
         localStorage.setItem('notes', JSON.stringify(newState))
     },
-    editNote: (newState: notesType[]) => {
+    editNote: (newState: NotesType[]) => {
         localStorage.setItem('notes', JSON.stringify(newState))
     },
-    deleteNote: (newState: notesType[]) => {
+    deleteNote: (newState: NotesType[]) => {
         localStorage.setItem('notes', JSON.stringify(newState))
     },
 }
