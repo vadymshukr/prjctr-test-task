@@ -1,4 +1,4 @@
-import { NotesType } from '../../store/notes';
+import {NotesType} from '../../types';
 
 export const NotesService = {
     getAllNotes: () => {

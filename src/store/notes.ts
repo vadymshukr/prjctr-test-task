@@ -1,26 +1,18 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { NotesService } from '../components/services/notesService';
 import { AppState } from './store';
+import {NotesType} from '../types';
 
-export interface NotesType {
-    title: string;
-    content: string;
-    id: number | null;
-}
 
-const initialState: NotesType[] = []
+
+export const initialState: NotesType[] = []
 
 const slice = createSlice({
     name: 'notes',
     initialState: initialState,
     reducers: {
-        getInitialNotes(state) {
-            const data = NotesService.getAllNotes()
-            if (data){
-                return JSON.parse(data)
-            } else {
-                return initialState
-            }
+        setInitialNotes(state, action) {
+            return action.payload
         },
         addNewNote(state, action) {
             const newState = [...state, action.payload]
@@ -62,7 +54,8 @@ const slice = createSlice({
 
 
 export const notesReducer = slice.reducer
-export const { getInitialNotes, addNewNote, editNote, deleteNote } = slice.actions
+export const { setInitialNotes, addNewNote, editNote, deleteNote } = slice.actions
+export const actions = slice.actions
 
 export function getNotesList(state: AppState) {
     return state.notes
