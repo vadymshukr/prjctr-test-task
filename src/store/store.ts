@@ -6,7 +6,6 @@ export const store = configureStore({
     reducer: {
         notes: notesReducer,
         modalStatus: modalStatusReducer
-
     },
     preloadedState: {}
 })

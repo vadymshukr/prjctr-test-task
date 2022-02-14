@@ -1,12 +1,9 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import sanitizeHtml from 'sanitize-html';
 import { MAX_CONTENT_LENGTH, MAX_TITLE_LENGTH } from '../../helpers/constants';
 import { FormDataEnum, HtmlFormattingEnum } from '../../helpers/enums';
 import { makeStringWithError } from '../../helpers/funcs';
 import { sanitizeConf, sanitizeNoTagsConf } from '../../helpers/sanitizeHtmlOptions';
-import { setModalHidden } from '../../store/modalStatus';
-import { addNewNote, editNote, NotesType } from '../../store/notes';
 import { Button } from '../button';
 import {
     ButtonGroup,
@@ -18,6 +15,8 @@ import {
     Textarea,
     Title
 } from './create-note-styled';
+import {NotesType} from '../../types';
+import {useModalStatus, useNoteListState} from '../../contexts';
 
 type Props = {
     note?: NotesType
@@ -30,6 +29,7 @@ type CreateNoteViewProps = {
     contentCounter: number
     isSaveButtonDisabled: boolean
     handleSave: (id: number | null) => void
+    closeModal: () => void
 }
 
 const CreateNoteView = ({
@@ -39,9 +39,9 @@ const CreateNoteView = ({
                             contentCounter,
                             isSaveButtonDisabled,
                             handleSave,
+                            closeModal
                             }: CreateNoteViewProps) => {
     const contentEditableRef = useRef<HTMLDivElement>(null);
-    const dispatch = useDispatch();
     const makeHtmlFormatting = (e: MouseEvent, type: HtmlFormattingEnum) => {
         e.preventDefault();
         switch (type){
@@ -83,14 +83,15 @@ const CreateNoteView = ({
                 <Button type='main'
                         disabled={isSaveButtonDisabled}
                         onClick={() => {handleSave(formData.id)}}>{formData?.id ? 'Edit' : 'Save'}</Button>
-                <Button type='warning' onClick={() => {dispatch(setModalHidden())}}>Cancel</Button>
+                <Button type='warning' onClick={closeModal}>Cancel</Button>
             </ButtonGroup>
         </Container>
     )
 }
 
 export function CreateNote({note} : Props) {
-    const dispatch = useDispatch()
+    const [_, noteActions] = useNoteListState();
+    const [__, modalActions] = useModalStatus();
 
     const [formData, setFormData] = useState<NotesType>({
         id: note?.id ? note.id : null,
@@ -119,18 +120,18 @@ export function CreateNote({note} : Props) {
 
     const handleSave = (id: number | null) => {
         if (id) {
-            dispatch(editNote({
+            noteActions.editNote({
                 id: id,
                 title: formData.title,
-                content: formData.content}))
-            dispatch(setModalHidden())
+                content: formData.content})
         } else {
-            dispatch(addNewNote({
+            noteActions.addNewNote({
                 id: new Date().getTime(),
                 title: formData.title,
-                content: formData.content}))
-            dispatch(setModalHidden())
+                content: formData.content})
         }
+        modalActions.setModalHidden()
+
 
     }
     return (
@@ -141,6 +142,7 @@ export function CreateNote({note} : Props) {
             titleCounter={MAX_TITLE_LENGTH - sanitizedTitleLength}
             contentCounter={MAX_CONTENT_LENGTH - sanitizedContentLength}
             handleFormChange={handleFormDataChange}
+            closeModal={()=> {modalActions.setModalHidden()}}
        />
     )
 }

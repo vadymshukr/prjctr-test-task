@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
-import Modal from 'react-modal';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { sanitizeNoTagsConf } from '../../helpers/sanitizeHtmlOptions';
-import { deleteNote, NotesType } from '../../store/notes';
 import { Button } from '../button';
-import { CreateNote } from '../create-note';
 import { ButtonsWrapper, Container, Title, Content, Main } from './note-styled';
 import sanitizeHtml from "sanitize-html";
+import {NotesType} from '../../types';
 
-export function Note({content, title, id} : NotesType) {
-    const navigate = useNavigate();
-    const [modalIsOpen, setModalIsOpen] = useState(false)
-    const dispatch = useDispatch();
+type Props = {
+    note: NotesType,
+    onNoteEdit: ({id, content, title}: NotesType) => void
+    onNoteDelete: (id: number | null) => void
+    onNoteNavigate: (id: number | null) => void
+}
+
+export function Note({note, onNoteEdit, onNoteDelete, onNoteNavigate}: Props) {
+    const {id, content, title} = note;
 
     return (
-        <>
         <Container>
             <Main>
                 <Title to={id ? id.toString(): '#'}>{title}</Title>
@@ -23,21 +23,10 @@ export function Note({content, title, id} : NotesType) {
             </Main>
 
             <ButtonsWrapper>
-                <Button type='' onClick={() => {navigate(id ? id.toString(): '#')}}>View</Button>
-                <Button type='main' onClick={() => {setModalIsOpen(true)}}>Edit</Button>
-                <Button type='warning' onClick={() => {dispatch(deleteNote(id))}}>Delete</Button>
+                <Button type='' onClick={() => {onNoteNavigate(id)}}>View</Button>
+                <Button type='main' onClick={() => onNoteEdit({id, content, title})}>Edit</Button>
+                <Button type='warning' onClick={() => onNoteDelete(id)}>Delete</Button>
             </ButtonsWrapper>
         </Container>
-            <Modal
-                isOpen={modalIsOpen}
-                style={{content: {
-                        background: 'transparent',
-                        borderColor: 'transparent'
-                    }}}>
-                <CreateNote
-                    note={{content, id, title}}
-                />
-            </Modal>
-        </>
     )
 }
