@@ -16,10 +16,11 @@ import {
     Title
 } from './create-note-styled';
 import {NotesType} from '../../types';
-import {useModalStatus, useNoteListState} from '../../contexts';
+import { useNoteListState, useSingleNoteState } from '../../contexts';
+import { useNavigate } from 'react-router-dom';
 
 type Props = {
-    note?: NotesType
+    note: NotesType
 }
 
 type CreateNoteViewProps = {
@@ -29,7 +30,7 @@ type CreateNoteViewProps = {
     contentCounter: number
     isSaveButtonDisabled: boolean
     handleSave: (id: number | null) => void
-    closeModal: () => void
+    handleCancel: () => void
 }
 
 const CreateNoteView = ({
@@ -39,7 +40,7 @@ const CreateNoteView = ({
                             contentCounter,
                             isSaveButtonDisabled,
                             handleSave,
-                            closeModal
+                            handleCancel
                             }: CreateNoteViewProps) => {
     const contentEditableRef = useRef<HTMLDivElement>(null);
     const makeHtmlFormatting = (e: MouseEvent, type: HtmlFormattingEnum) => {
@@ -83,66 +84,62 @@ const CreateNoteView = ({
                 <Button type='main'
                         disabled={isSaveButtonDisabled}
                         onClick={() => {handleSave(formData.id)}}>{formData?.id ? 'Edit' : 'Save'}</Button>
-                <Button type='warning' onClick={closeModal}>Cancel</Button>
+                <Button type='warning' onClick={handleCancel}>Cancel</Button>
             </ButtonGroup>
         </Container>
     )
 }
 
 export function CreateNote({note} : Props) {
-    const [_, noteActions] = useNoteListState();
-    const [__, modalActions] = useModalStatus();
+    const navigate = useNavigate()
+    const [_, notesActions] = useNoteListState()
+    const [__, singleNoteActions] = useSingleNoteState()
 
-    const [formData, setFormData] = useState<NotesType>({
-        id: note?.id ? note.id : null,
-        title: note?.title ? note?.title : '',
-        content: note?.content ? note?.content : ''
-    })
-
-    const sanitizedTitleLength = useMemo(() => sanitizeHtml(formData.title, sanitizeNoTagsConf).length, [formData.title])
-
-    const sanitizedContentLength = useMemo(() => sanitizeHtml(formData.content, sanitizeNoTagsConf).length, [formData.content])
-
-    const isSaveButtonDisabled = useMemo(() => {
-        return !formData.title.length || !formData.content.length || sanitizedTitleLength > MAX_TITLE_LENGTH || sanitizedContentLength > MAX_CONTENT_LENGTH
-    }, [formData.title, formData.content])
+    const sanitizedTitleLength = useMemo(() => sanitizeHtml(note.title, sanitizeNoTagsConf).length, [note.title])
+    const sanitizedContentLength = useMemo(() => sanitizeHtml(note.content, sanitizeNoTagsConf).length, [note.content])
+    const isSaveButtonDisabled = useMemo(
+        () =>
+            !note.title.length ||
+            !note.content.length ||
+            sanitizedTitleLength > MAX_TITLE_LENGTH ||
+            sanitizedContentLength > MAX_CONTENT_LENGTH,
+        [note.title, note.content]
+    )
 
     const handleFormDataChange = (value: string, type: FormDataEnum) => {
         const sanitizedValue = sanitizeHtml(value, sanitizeConf)
         switch (type) {
             case FormDataEnum.Title:
-                setFormData({...formData, title: makeStringWithError(sanitizedValue, MAX_TITLE_LENGTH)})
+                singleNoteActions.setCurrentNote({...note, title: makeStringWithError(sanitizedValue, MAX_TITLE_LENGTH)})
                 break
             case FormDataEnum.Content:
-                setFormData({...formData, content: sanitizeHtml(value, sanitizeConf)})
+                singleNoteActions.setCurrentNote({...note, content: sanitizeHtml(value, sanitizeConf)})
         }
     }
 
     const handleSave = (id: number | null) => {
         if (id) {
-            noteActions.editNote({
+            notesActions.editNote({
                 id: id,
-                title: formData.title,
-                content: formData.content})
+                title: note.title,
+                content: note.content})
         } else {
-            noteActions.addNewNote({
+            notesActions.addNewNote({
                 id: new Date().getTime(),
-                title: formData.title,
-                content: formData.content})
+                title: note.title,
+                content: note.content})
         }
-        modalActions.setModalHidden()
-
-
+        navigate('/')
     }
     return (
        <CreateNoteView
-            formData={formData}
+            formData={note}
             isSaveButtonDisabled={isSaveButtonDisabled}
             handleSave={handleSave}
             titleCounter={MAX_TITLE_LENGTH - sanitizedTitleLength}
             contentCounter={MAX_CONTENT_LENGTH - sanitizedContentLength}
             handleFormChange={handleFormDataChange}
-            closeModal={()=> {modalActions.setModalHidden()}}
+            handleCancel={() => {navigate('/')}}
        />
     )
 }

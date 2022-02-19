@@ -7,14 +7,20 @@ import {
     initialState,
     setInitialNotes
 } from '../store/notes';
+import {
+    getCurrentNoteSelector,
+    initialState as currentNoteInitial,
+    setCurrentNote,
+} from '../store/current-note'
 import { useDispatch, useSelector,  Provider as ReduxProvider } from 'react-redux';
 import { Dispatch } from 'redux';
 import { store } from '../store';
 import { NotesType } from '../types';
-import {getModalStatus, setModalHidden, setModalVisible} from '../store/modalStatus';
+import {getVisibleNotes, setVisibleNotes} from '../store/visible-notes';
 
 const NotesListContext = createContext<[NotesType[], Dispatch]>([initialState, useDispatch])
-const ModalStatusContext = createContext<[boolean, Dispatch]>([false, useDispatch])
+const SingleNoteContext = createContext<[NotesType, Dispatch]>([currentNoteInitial, useDispatch])
+const VisibleNotesContext = createContext<[NotesType[], Dispatch]>([[] as NotesType[], useDispatch])
 
 function NotesListProvider({ children }: PropsWithChildren<any>) {
     const  dispatch = useDispatch()
@@ -24,22 +30,30 @@ function NotesListProvider({ children }: PropsWithChildren<any>) {
     )
 }
 
-function ModalProvider({children}: PropsWithChildren<any> ) {
+function CurrentNoteProvider({children}: PropsWithChildren<any>) {
     const dispatch = useDispatch()
-    const state = useSelector(getModalStatus)
+    const state = useSelector(getCurrentNoteSelector)
     return (
-        <ModalStatusContext.Provider value={[state, dispatch]}>{children}</ModalStatusContext.Provider>
+        <SingleNoteContext.Provider value={[state, dispatch]}>{children}</SingleNoteContext.Provider>
+    )
+}
+
+function VisibleNotesProvider({children}: PropsWithChildren<any>) {
+    const dispatch = useDispatch()
+    const state = useSelector(getVisibleNotes)
+    return (
+        <VisibleNotesContext.Provider value={[state, dispatch]}>{children}</VisibleNotesContext.Provider>
     )
 }
 
 export function ReduxWrapper({children} : PropsWithChildren<any>){
     return (
         <ReduxProvider store={store}>
-            <NotesListProvider>
-                <ModalProvider>
-                    {children}
-                </ModalProvider>
-            </NotesListProvider>
+            <CurrentNoteProvider>
+                <NotesListProvider>
+                    <VisibleNotesProvider>{children}</VisibleNotesProvider>
+                </NotesListProvider>
+            </CurrentNoteProvider>
         </ReduxProvider>
         )
 }
@@ -52,16 +66,21 @@ export function useNoteListState() {
         editNote: (payload: any) => dispatch(editNote(payload)),
         deleteNote:(payload: any) => dispatch(deleteNote(payload))
     }))
-
-    return [state, actions] as const;
+    return [state, actions] as const
 }
 
-export function useModalStatus() {
-    const [state, dispatch] = useContext(ModalStatusContext)
+export function useSingleNoteState() {
+    const [state, dispatch] = useContext(SingleNoteContext)
     const [actions] = useState(() => ({
-        setModalVisible: () => dispatch(setModalVisible()),
-        setModalHidden: () => dispatch(setModalHidden()),
+        setCurrentNote: (payload: NotesType) => dispatch(setCurrentNote(payload)),
     }))
+    return [state, actions] as const
+}
 
-    return [state, actions] as const;
+export function useVisibleNotesState() {
+    const [state, dispatch] = useContext(VisibleNotesContext)
+    const [actions] = useState(() => ({
+        setVisibleNotes: (payload: NotesType[]) => dispatch(setVisibleNotes(payload))
+    }))
+    return [state, actions] as const
 }

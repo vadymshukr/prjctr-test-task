@@ -1,44 +1,42 @@
 import React, { useEffect, useState } from 'react';
-import { Button, CreateNote, Note, Searchbar } from '../../components';
+import { Button, Note, Searchbar } from '../../components';
 import { Container, NotesList, TopNavigation } from './home-styled';
-import Modal from 'react-modal';
 import { NotesType } from '../../types';
 import { NotesService } from '../../components/services/notesService';
-import { useModalStatus, useNoteListState } from '../../contexts';
-import {useNavigate} from 'react-router-dom';
-Modal.setAppElement('#root');
+import {useNoteListState, useSingleNoteState, useVisibleNotesState} from '../../contexts';
+import { useNavigate } from 'react-router-dom';
+import { initialState } from '../../store/current-note';
 
 export function Home () {
     const navigate = useNavigate()
-    const [visibleNotes, setVisibleNotes] = useState([] as NotesType[])
-    const [currentNote, setCurrentNote] = useState({} as NotesType)
-    const [noteState, noteActions] = useNoteListState()
-    const [modalState, modalActions] = useModalStatus()
-    const notes = noteState
+    const [notesState, notesActions] = useNoteListState()
+    const [_, singleNoteActions] = useSingleNoteState()
+    const [visibleNotesState, visibleNotesActions] = useVisibleNotesState()
+    const notes = notesState
 
     useEffect(() => {
         const data = NotesService.getAllNotes()
         if (data) {
-            noteActions.setInitialNotes(JSON.parse(data))
+            notesActions.setInitialNotes(JSON.parse(data))
         }
     }, [])
 
     useEffect(() => {
-        setVisibleNotes(notes)
-    }, [notes, noteState])
+        visibleNotesActions.setVisibleNotes(notes)
+    }, [notes])
 
     const handleSearch = (value: string) => {
         const filteredNotes = notes.filter(note => note.title.includes(value) || note.content.includes(value))
-        setVisibleNotes(filteredNotes)
+        visibleNotesActions.setVisibleNotes(filteredNotes)
     }
 
     const handleNoteEdit =({id, content, title}: NotesType) => {
-        setCurrentNote({id, content, title})
-        modalActions.setModalVisible()
+        singleNoteActions.setCurrentNote({id, content, title})
+        navigate('edit')
     }
 
     const handleNoteDelete = (id: number | null) => {
-        noteActions.deleteNote(id)
+        notesActions.deleteNote(id)
     }
 
     const handleNoteNavigate = (id: number | null) => {
@@ -46,48 +44,37 @@ export function Home () {
     }
 
     const handleCreateNote = () => {
-        setCurrentNote({} as NotesType)
-        modalActions.setModalVisible()
+        singleNoteActions.setCurrentNote(initialState)
+        navigate('create')
     }
 
     return (
-        <>
-            <Container>
-                <TopNavigation>
-                    <Searchbar handleSearch={handleSearch}/>
-                    <Button onClick={handleCreateNote}>
-                        Create note
-                    </Button>
-                </TopNavigation>
-                {visibleNotes.length > 0 ?
-                <NotesList>
-                    {visibleNotes.map( item => {
-                        const {content, id, title} = item;
-                        return (
-                            <Note
-                                note={{content, id, title}}
-                                onNoteEdit={handleNoteEdit}
-                                onNoteDelete={handleNoteDelete}
-                                onNoteNavigate={handleNoteNavigate}
-                                key={id}/>
-                        )
-                    }
-                )}
+        <Container>
+            <TopNavigation>
+                <Searchbar handleSearch={handleSearch}/>
+                <Button onClick={handleCreateNote}>
+                    Create note
+                </Button>
+            </TopNavigation>
+            {visibleNotesState.length > 0 ?
+            <NotesList>
+                {visibleNotesState.map( item => {
+                    const {content, id, title} = item;
+                    return (
+                        <Note
+                            note={{content, id, title}}
+                            onNoteEdit={handleNoteEdit}
+                            onNoteDelete={handleNoteDelete}
+                            onNoteNavigate={handleNoteNavigate}
+                            key={id}/>
+                            )
+                        }
+                    )}
+            </NotesList>
+            :
+            <h1>Sorry, you don't have any notes or notes not includes your search query</h1>
+            }
 
-                </NotesList>
-                    :
-                    <h1>Sorry, you don't have any notes or notes not includes your search query</h1>
-                }
-
-            </Container>
-            <Modal
-                isOpen={modalState}
-                style={{content: {
-                    background: 'transparent',
-                    borderColor: 'transparent'
-                }}}>
-                <CreateNote note={currentNote}/>
-            </Modal>
-        </>
+        </Container>
     )
 }

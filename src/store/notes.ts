@@ -1,9 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { NotesService } from '../components/services/notesService';
 import { AppState } from './store';
-import {NotesType} from '../types';
-
-
+import { NotesType } from '../types';
 
 export const initialState: NotesType[] = []
 
@@ -20,9 +18,7 @@ const slice = createSlice({
             return newState;
         },
         editNote(state, action) {
-            const updatedIndex = state.findIndex((note: NotesType) => {
-                return note.id === action.payload.id;
-            })
+            const updatedIndex = state.findIndex((note: NotesType) => note.id === action.payload.id)
 
             const newState = [
                 ...state.slice(0, updatedIndex),
@@ -31,11 +27,9 @@ const slice = createSlice({
                     title:action.payload.title },
                 ...state.slice(updatedIndex + 1),
             ]
-
             NotesService.editNote(newState)
 
             return newState
-
         },
         deleteNote(state, action){
             const deletedIndex = state.findIndex((note: NotesType) => {

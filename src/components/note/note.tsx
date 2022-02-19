@@ -3,7 +3,7 @@ import { sanitizeNoTagsConf } from '../../helpers/sanitizeHtmlOptions';
 import { Button } from '../button';
 import { ButtonsWrapper, Container, Title, Content, Main } from './note-styled';
 import sanitizeHtml from "sanitize-html";
-import {NotesType} from '../../types';
+import { NotesType } from '../../types';
 
 type Props = {
     note: NotesType,
