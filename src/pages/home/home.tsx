@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Button, Note, Searchbar } from '../../components';
 import { Container, NotesList, TopNavigation } from './home-styled';
 import { NotesType } from '../../types';
 import { NotesService } from '../../components/services/notesService';
 import {useNoteListState, useSingleNoteState, useVisibleNotesState} from '../../contexts';
-import { useNavigate } from 'react-router-dom';
 import { initialState } from '../../store/current-note';
+import {changeRoute} from '../../helpers/funcs';
 
 export function Home () {
-    const navigate = useNavigate()
     const [notesState, notesActions] = useNoteListState()
     const [_, singleNoteActions] = useSingleNoteState()
     const [visibleNotesState, visibleNotesActions] = useVisibleNotesState()
@@ -32,7 +31,7 @@ export function Home () {
 
     const handleNoteEdit =({id, content, title}: NotesType) => {
         singleNoteActions.setCurrentNote({id, content, title})
-        navigate('edit')
+        changeRoute('edit')
     }
 
     const handleNoteDelete = (id: number | null) => {
@@ -40,12 +39,12 @@ export function Home () {
     }
 
     const handleNoteNavigate = (id: number | null) => {
-        navigate(id ? id.toString(): '#')
+        changeRoute(id ? id.toString(): '#')
     }
 
     const handleCreateNote = () => {
         singleNoteActions.setCurrentNote(initialState)
-        navigate('create')
+        changeRoute('create')
     }
 
     return (

@@ -4,6 +4,7 @@ import { Button } from '../button';
 import { ButtonsWrapper, Container, Title, Content, Main } from './note-styled';
 import sanitizeHtml from "sanitize-html";
 import { NotesType } from '../../types';
+import {changeRoute} from '../../helpers/funcs';
 
 type Props = {
     note: NotesType,
@@ -18,7 +19,7 @@ export function Note({note, onNoteEdit, onNoteDelete, onNoteNavigate}: Props) {
     return (
         <Container>
             <Main>
-                <Title to={id ? id.toString(): '#'}>{title}</Title>
+                <Title onClick={() => {changeRoute(id ? id.toString(): '#')}}>{title}</Title>
                 <Content>{sanitizeHtml(content, sanitizeNoTagsConf)}</Content>
             </Main>
 
