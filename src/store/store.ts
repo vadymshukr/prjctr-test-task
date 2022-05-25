@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { modalStatusReducer } from './modalStatus';
 import { notesReducer } from './notes';
+import { currentNoteReducer } from './current-note';
+import { visibleNotesReducer } from './visible-notes';
 
 export const store = configureStore({
     reducer: {
         notes: notesReducer,
-        modalStatus: modalStatusReducer
+        visibleNotes: visibleNotesReducer,
+        currentNote: currentNoteReducer
     },
     preloadedState: {}
 })
