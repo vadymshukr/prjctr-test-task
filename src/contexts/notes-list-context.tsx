@@ -61,9 +61,9 @@ export function ReduxWrapper({children} : PropsWithChildren<any>){
 export function useNoteListState() {
     const [state, dispatch] = useContext(NotesListContext)
     const [actions] = useState(() => ({
-        setInitialNotes: (payload: any) => dispatch(setInitialNotes(payload)),
-        addNewNote: (payload: any) => dispatch(addNewNote(payload)),
-        editNote: (payload: any) => dispatch(editNote(payload)),
+        setInitialNotes: (payload: NotesType[]) => dispatch(setInitialNotes(payload)),
+        addNewNote: (payload: NotesType) => dispatch(addNewNote(payload)),
+        editNote: (payload: NotesType) => dispatch(editNote(payload)),
         deleteNote:(payload: any) => dispatch(deleteNote(payload))
     }))
     return [state, actions] as const

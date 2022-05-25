@@ -1,17 +1,19 @@
-import React, { useEffect } from 'react';
-import { Button, Note, Searchbar } from '../../components';
+import React, {useContext, useEffect} from 'react';
+import {Button, Note, Searchbar} from '../../components';
 import { Container, NotesList, TopNavigation } from './home-styled';
 import { NotesType } from '../../types';
 import { NotesService } from '../../components/services/notesService';
 import {useNoteListState, useSingleNoteState, useVisibleNotesState} from '../../contexts';
 import { initialState } from '../../store/current-note';
-import {changeRoute} from '../../helpers/funcs';
+import { RouterContext } from '../../contexts/router-context';
 
 export function Home () {
     const [notesState, notesActions] = useNoteListState()
     const [_, singleNoteActions] = useSingleNoteState()
     const [visibleNotesState, visibleNotesActions] = useVisibleNotesState()
     const notes = notesState
+    const {navigate} = useContext(RouterContext)
+
 
     useEffect(() => {
         const data = NotesService.getAllNotes()
@@ -31,7 +33,7 @@ export function Home () {
 
     const handleNoteEdit =({id, content, title}: NotesType) => {
         singleNoteActions.setCurrentNote({id, content, title})
-        changeRoute('edit')
+        navigate('edit')
     }
 
     const handleNoteDelete = (id: number | null) => {
@@ -39,12 +41,12 @@ export function Home () {
     }
 
     const handleNoteNavigate = (id: number | null) => {
-        changeRoute(id ? id.toString(): '#')
+        navigate(id ? id.toString(): '#')
     }
 
     const handleCreateNote = () => {
         singleNoteActions.setCurrentNote(initialState)
-        changeRoute('create')
+        navigate('create')
     }
 
     return (
