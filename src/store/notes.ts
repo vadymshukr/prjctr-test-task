@@ -51,6 +51,7 @@ export const notesReducer = slice.reducer
 export const { setInitialNotes, addNewNote, editNote, deleteNote } = slice.actions
 export const actions = slice.actions
 
+
 export function getNotesList(state: AppState) {
     return state.notes
 }

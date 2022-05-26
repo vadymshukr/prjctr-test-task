@@ -1,7 +1,7 @@
 import React, {useContext, useEffect} from 'react';
 import {Button, Note, Searchbar} from '../../components';
 import { Container, NotesList, TopNavigation } from './home-styled';
-import { NotesType } from '../../types';
+import { NoteId, NotesType } from '../../types';
 import { NotesService } from '../../components/services/notesService';
 import {useNoteListState, useSingleNoteState, useVisibleNotesState} from '../../contexts';
 import { initialState } from '../../store/current-note';
@@ -36,11 +36,11 @@ export function Home () {
         navigate('edit')
     }
 
-    const handleNoteDelete = (id: number | null) => {
+    const handleNoteDelete = (id: NoteId) => {
         notesActions.deleteNote(id)
     }
 
-    const handleNoteNavigate = (id: number | null) => {
+    const handleNoteNavigate = (id: NoteId) => {
         navigate(id ? id.toString(): '#')
     }
 
