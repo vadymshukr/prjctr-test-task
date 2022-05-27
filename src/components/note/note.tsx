@@ -3,13 +3,13 @@ import { sanitizeNoTagsConf } from '../../helpers/sanitizeHtmlOptions';
 import { Button } from '../button';
 import { ButtonsWrapper, Container, Title, Content, Main } from './note-styled';
 import sanitizeHtml from "sanitize-html";
-import { NotesType } from '../../types';
+import { NoteId, NotesType } from '../../types';
 
 type Props = {
     note: NotesType,
     onNoteEdit: ({id, content, title}: NotesType) => void
-    onNoteDelete: (id: number | null) => void
-    onNoteNavigate: (id: number | null) => void
+    onNoteDelete: (id: NoteId) => void
+    onNoteNavigate: (id: NoteId) => void
 }
 
 export function Note({note, onNoteEdit, onNoteDelete, onNoteNavigate}: Props) {
@@ -18,7 +18,7 @@ export function Note({note, onNoteEdit, onNoteDelete, onNoteNavigate}: Props) {
     return (
         <Container>
             <Main>
-                <Title to={id ? id.toString(): '#'}>{title}</Title>
+                <Title onClick={() => {onNoteNavigate(id)}}>{title}</Title>
                 <Content>{sanitizeHtml(content, sanitizeNoTagsConf)}</Content>
             </Main>
 
