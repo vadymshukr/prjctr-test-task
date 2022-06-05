@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, {useContext, useEffect} from 'react';
 import { Button } from '../../components';
 import {Content, Main } from '../../components/note/note-styled';
 import sanitizeHtml from "sanitize-html";
 import { NotesService } from '../../components/services/notesService';
 import { sanitizeConf } from '../../helpers/sanitizeHtmlOptions';
 import { ButtonWrapper, Container } from './single-note-styled';
+import {RouterContext} from '../../contexts/router-context';
 const linkEventListener = (e: MouseEvent, link: HTMLAnchorElement) =>
 {
     e.preventDefault();
@@ -16,10 +16,10 @@ const linkEventListener = (e: MouseEvent, link: HTMLAnchorElement) =>
 }
 
 export function SingleNote() {
-  const route = useParams();
-  const {id} = route;
+  const { getId } = useContext(RouterContext);
+  const id = getId()
   const single = NotesService.getSingleNote(Number(id))
-  const navigate = useNavigate();
+  const { navigate } = useContext(RouterContext)
 
   useEffect(() => {
       const links:NodeListOf<HTMLAnchorElement> = (document.querySelectorAll('a'));

@@ -15,7 +15,7 @@ import {
 import { useDispatch, useSelector,  Provider as ReduxProvider } from 'react-redux';
 import { Dispatch } from 'redux';
 import { store } from '../store';
-import { NotesType } from '../types';
+import { NoteId, NotesType } from '../types';
 import {getVisibleNotes, setVisibleNotes} from '../store/visible-notes';
 
 const NotesListContext = createContext<[NotesType[], Dispatch]>([initialState, useDispatch])
@@ -61,10 +61,10 @@ export function ReduxWrapper({children} : PropsWithChildren<any>){
 export function useNoteListState() {
     const [state, dispatch] = useContext(NotesListContext)
     const [actions] = useState(() => ({
-        setInitialNotes: (payload: any) => dispatch(setInitialNotes(payload)),
-        addNewNote: (payload: any) => dispatch(addNewNote(payload)),
-        editNote: (payload: any) => dispatch(editNote(payload)),
-        deleteNote:(payload: any) => dispatch(deleteNote(payload))
+        setInitialNotes: (payload: NotesType[]) => dispatch(setInitialNotes(payload)),
+        addNewNote: (payload: NotesType) => dispatch(addNewNote(payload)),
+        editNote: (payload: NotesType) => dispatch(editNote(payload)),
+        deleteNote:(payload: NoteId) => dispatch(deleteNote(payload))
     }))
     return [state, actions] as const
 }
