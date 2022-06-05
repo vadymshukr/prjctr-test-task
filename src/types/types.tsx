@@ -7,6 +7,15 @@ export type NotesType = {
 export type NoteId = number | null;
 
 export type RouterContextType  = {
-    navigate: (route: string) => void
-    getId: () => string | undefined
+    navigate: (route: string) => void;
+    getId: () => string | undefined;
+}
+
+export type AuthType = {
+    isLoggedIn: boolean;
+}
+
+export type User = {
+    login: string;
+    password: string;
 }
