@@ -2,12 +2,14 @@ import { configureStore } from '@reduxjs/toolkit';
 import { notesReducer } from './notes';
 import { currentNoteReducer } from './current-note';
 import { visibleNotesReducer } from './visible-notes';
+import {authReducer} from './auth';
 
 export const store = configureStore({
     reducer: {
         notes: notesReducer,
         visibleNotes: visibleNotesReducer,
-        currentNote: currentNoteReducer
+        currentNote: currentNoteReducer,
+        auth: authReducer
     },
     preloadedState: {}
 })
